@@ -72,14 +72,14 @@
   (let* ((start-point)
          (repo-info (org-github-repo-info))
          (issue (ghubp-get-repos-owner-repo-issues-number
-                 repo-info `((number . ,issue-number))))
+                    repo-info `((number . ,issue-number))))
          (title (cdr (assoc 'title issue)))
          (url (cdr (assoc 'url issue)))
          (body (cdr (assoc 'body issue)))
          (repo-name (cdadr (assoc 'owner repo-info)))
          (comments (when (cdr (assoc 'comments issue))
                      (ghubp-get-repos-owner-repo-issues-number-comments
-                      repo-info`((number . ,issue-number))))))
+                         repo-info `((number . ,issue-number))))))
     (org-insert-todo-heading-respect-content)
     (insert title)
     (org-set-tags-to (format ":%s_%s:" (upcase repo-name) issue-number))
@@ -93,7 +93,7 @@
     (shell-command-on-region start-point (point) "pandoc -f gfm -t org" :replace t)
     (org-indent-refresh-maybe (point) (mark) nil)
     (when comments
-      (org-insert-todo-heading-respect-content)
+      (org-insert-heading-respect-content)
       (insert "Comments\n")
       (org-do-demote)
       (setq start-point (point))
