@@ -1,6 +1,6 @@
 ;;; org-github.el --- Sync org tasks with github issues    -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2018  Daniel Kraus
+;; Copyright (C) 2018,2019  Daniel Kraus
 
 ;; Author: Daniel Kraus <daniel@kraus.my>
 ;; Version: 0.1
@@ -40,6 +40,7 @@
 
 (require 'ghub+)
 (require 'org)
+(require 'org-indent)
 
 (defgroup org-github nil
   "org-github"
@@ -68,6 +69,7 @@
 
 ;;;###autoload
 (defun org-github-issue-to-org (issue-number)
+  "Fetch github issue ISSUE-NUMBER and insert as ORG in current buffer."
   (interactive "NGithub issue number:")
   (let* ((start-point)
          (repo-info (org-github-repo-info))
@@ -82,8 +84,12 @@
                          repo-info `((number . ,issue-number))))))
     (org-insert-todo-heading-respect-content)
     (insert title)
-    (org-set-tags-to (format ":%s_%s:" (upcase repo-name) issue-number))
-    (org-set-tags-command t t)  ; realign tags
+    (if (version< org-version "9.2")
+        (with-no-warnings
+          (org-set-tags-to (format ":%s_%s:" (upcase repo-name) issue-number))
+          (org-set-tags-command t t))  ; realign tags
+      (org-set-tags (format ":%s_%s:" (upcase repo-name) issue-number))
+      (org-set-tags-command t))
     (forward-line 3)  ; Move 3 lines down to the last PROPERTIES drawer line
     (move-end-of-line 1)
     (insert (format "\n[[%s][%s]]\n"
