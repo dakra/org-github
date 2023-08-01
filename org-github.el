@@ -1,6 +1,6 @@
 ;;; org-github.el --- Sync org tasks with github issues    -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2018,2019  Daniel Kraus
+;; Copyright (C) 2018-2023 Daniel Kraus
 
 ;; Author: Daniel Kraus <daniel@kraus.my>
 ;; Version: 0.1
@@ -49,13 +49,15 @@
 
 (defcustom org-github-default-owner nil
   "Username to use as fallback when not specified as org property."
-  :type 'string
-  :group 'org-github)
+  :type 'string)
 
 (defcustom org-github-default-name nil
   "Repo name to use as fallback when not specified as org property."
-  :type 'string
-  :group 'org-github)
+  :type 'string)
+
+(defcustom org-github-set-tag nil
+  "Create an org-tag for the issue."
+  :type 'boolean)
 
 
 
@@ -76,7 +78,7 @@
          (issue (ghubp-get-repos-owner-repo-issues-number
                     repo-info `((number . ,issue-number))))
          (title (cdr (assoc 'title issue)))
-         (url (cdr (assoc 'url issue)))
+         (url (cdr (assoc 'html_url issue)))
          (body (cdr (assoc 'body issue)))
          (repo-name (cdadr (assoc 'owner repo-info)))
          (comments (when (cdr (assoc 'comments issue))
@@ -84,11 +86,9 @@
                          repo-info `((number . ,issue-number))))))
     (org-insert-todo-heading-respect-content)
     (insert title)
-    (if (version< org-version "9.2")
-        (with-no-warnings
-          (org-set-tags-to (format ":%s_%s:" (upcase repo-name) issue-number))
-          (org-set-tags-command t t))  ; realign tags
+    (when org-github-set-tag
       (org-set-tags (format ":%s_%s:" (upcase repo-name) issue-number))
+      ;; realign tags
       (org-set-tags-command t))
     (forward-line 3)  ; Move 3 lines down to the last PROPERTIES drawer line
     (move-end-of-line 1)
